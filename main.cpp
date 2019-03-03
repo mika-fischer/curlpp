@@ -10,23 +10,27 @@ int main() {
         headers.append("FOO");
 
         curl::easy conn;
-        conn.setopt(curl::opt::URL, "http://httpbin.org/get");
-        conn.setopt(curl::opt::USERAGENT, curl::version());
-        conn.perform();
 
-        std::cout << "URL: " << conn.getinfo(curl::info::EFFECTIVE_URL) << "\n";
-        std::cout << "RESPONSE_CODE: " << conn.getinfo(curl::info::RESPONSE_CODE) << "\n";
-        std::cout << "TOTAL: " << conn.getinfo(curl::info::TOTAL_TIME).count() / 1000 << "\n";
-        std::cout << "UP   SIZE:  " << conn.getinfo(curl::info::SIZE_UPLOAD) << "\n";
-        std::cout << "UP   SPEED: " << conn.getinfo(curl::info::SPEED_UPLOAD) << "\n";
-        std::cout << "DOWN SIZE:  " << conn.getinfo(curl::info::SIZE_DOWNLOAD) << "\n";
-        std::cout << "DOWN SPEED: " << conn.getinfo(curl::info::SPEED_DOWNLOAD) << "\n";
+        {
+            using namespace curl::opt;
+            conn.setopt(URL, "https://httpbin.org/get");
+            conn.setopt(USERAGENT, curl::version());
+        }
 
-        auto conn2 = conn.duphandle();
-        conn2.perform();
+        for (int i=0; i<2; ++i) {
+            conn.perform();
 
-        conn.reset();
-        conn.perform();
+            using namespace curl::info;
+            std::cout << "Protocol:      " << (int)conn.getinfo(PROTOCOL) << "\n";
+            std::cout << "HTTP Version:  " << (int)conn.getinfo(HTTP_VERSION) << "\n";
+            std::cout << "URL:           " << conn.getinfo(EFFECTIVE_URL) << "\n";
+            std::cout << "RESPONSE_CODE: " << conn.getinfo(RESPONSE_CODE) << "\n";
+            std::cout << "TOTAL:         " << conn.getinfo(TOTAL_TIME).count() / 1000 << "\n";
+            std::cout << "UP   SIZE:     " << conn.getinfo(SIZE_UPLOAD) << "\n";
+            std::cout << "UP   SPEED:    " << conn.getinfo(SPEED_UPLOAD) << "\n";
+            std::cout << "DOWN SIZE:     " << conn.getinfo(SIZE_DOWNLOAD) << "\n";
+            std::cout << "DOWN SPEED:    " << conn.getinfo(SPEED_DOWNLOAD) << "\n";
+        }
     }
     catch (std::exception& e) {
         std::cerr << "ERROR: " << e.what() << "\n";
